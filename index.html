@@ -1,0 +1,525 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>CMSC 726 Project 3: Unsupervised Learning</title>
+<style type="text/css">
+<!--
+.style1 {
+font-style: italic;
+font-weight: bold;
+}
+-->
+</style>
+<link href="project.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<h2>CMSC 726 Project 3: Unsupervised Learning</h2>
+
+<h3>Table of Contents</h3>
+<ul>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#pca">PCA and Kernel PCA<i>[20%]</i></a>
+<li><a href="#viterbi">HMMs: Viterbi <i>[30%]</i></a>
+<li><a href="#fb">HMMs: Forward Backward <i>[50%]</i></a>
+</ul>
+
+<h3><a name="intro">Introduction</a></h3>
+
+In this project, we will explore two algorithms for dimensionality
+reduction (PCA and kernel PCA) and hidden Markov models.  You can
+download all the files
+<a href="p3.tar.gz">here</a>.<p/>
+
+<table border="0" cellpadding="10">
+  <tr><td colspan="2"><b>Files you'll edit:</b></td></tr>
+
+  <tr><td><code>dr.py</code></td>
+  <td>You will implement PCA and kernel PCA here.</td></tr>
+
+  <tr><td><code>hmm.py</code></td>
+  <td>You will implement code for hidden Markov models here.</td></tr>
+
+  <tr><td colspan="2"><b>Files you might want to look at:</b></td></tr>
+
+  <tr><td><code>datasets.py</code></td>
+  <td>Includes (in python format) some simple toy data sets.</td></tr>
+
+  <tr><td><code>digits</code></td>
+  <td>Digits data.</td></tr>
+
+  <tr><td><code>kernel.py</code></td>
+  <td>Some basic kernels.</td></tr>
+
+  <tr><td><code>util.py</code></td>
+  <td>Some helpful utilities, including plotting functions.</td></tr>
+</table><p/>
+
+<p><strong>What to submit:</strong> You
+  will <a href="http://www.cs.utah.edu/~hal/handin.pl?course=cmsc726">handin</a>
+  all of the python files listed above under "Files you'll edit" as
+  well as a <tt>partners.txt</tt> file that lists the <b>names</b>
+  and <b>uids</b> (first four digits) of all members in your team.
+  Finally, you'll hand in a <tt>writeup.pdf</tt> file that answers all
+  the written questions in this assignment (denoted by <b>WU#:</b> in
+  this <tt>.html</tt> file), as well as <tt>dr.py</tt>
+  and <tt>hmm.py</tt>.<p/>
+
+<p><strong>Evaluation:</strong> Your code will be autograded for
+technical correctness. Please <em>do not</em> change the names of any
+provided functions or classes within the code, or you will wreak havoc
+on the autograder. However, the correctness of your implementation --
+not the autograder's output -- will be the final judge of your score.
+If necessary, we will review and grade assignments individually to
+ensure that you receive due credit for your work.
+
+<p><strong>Academic Dishonesty:</strong> We will be checking your code
+against other submissions in the class for logical redundancy. If you
+copy someone else's code and submit it with minor changes, we will
+know. These cheat detectors are quite hard to fool, so please don't
+try. We trust you all to submit your own work only; <em>please</em>
+don't let us down. If you do, we will pursue the strongest
+consequences available to us.
+
+<p><strong>Getting Help:</strong> You are not alone!  If you find
+yourself stuck on something, contact the course staff for help.
+Office hours, class time, and the mailing list are there for your
+support; please use them.  If you can't make our office hours, let us
+know and we will schedule more.  We want these projects to be
+rewarding and instructional, not frustrating and demoralizing.  But,
+we don't know when or how to help unless you ask.  One more piece of
+advice: if you don't know what a variable is, print it out.
+
+<h3><a name="pca">PCA and Kernel PCA <i>[20%]</i></a></h3>
+
+Our first tasks are to implement PCA and kernel PCA.  If implemented
+correctly, these should be 5-line functions (plus the supporting code
+I've provided): just be sure to use numpy's eigenvalue computation
+code.  Implement PCA in the function <tt>pca</tt>
+in <tt>dr.py</tt>.<p/>
+
+Our first test of PCA will be on Gaussian data with a known covariance
+matrix.  First, let's generate some data and see how it looks, and see
+what the <i>sample covariance</i> is:<p/>
+
+<pre>
+>>> Si = util.sqrtm(array([[3,2],[2,4]]))
+>>> x = dot(randn(1000,2), Si)
+>>> plot(x[:,0], x[:,1], 'b.')
+>>> dot(x.T,x) / real(x.shape[0])
+array([[ 2.88360146,  2.05144774],
+       [ 2.05144774,  4.05987148]])
+</pre><p/>
+
+(Note: The reason we have to do a matrix square-root on the covariance
+is because Gaussians are transformed by standard deviations, not by
+covariances.)<p/>
+
+Note that the sample covariance of the data is almost exactly the true
+covariance of the data.  If you run this with 100,000 data points
+(instead of 1000), you should get something even closer to
+<tt>[[3,2],[2,4]]</tt>.<p/>
+
+Now, let's run PCA on this data.  We basically know what should
+happen, but let's make sure it happens anyway.<p/>
+
+<pre>
+>>> (P,Z,evals) = dr.pca(x, 2)
+>>> Z
+array([[ 0.57546631, -0.81782549],
+       [-0.81782549, -0.57546631]])
+>>> evals
+array([ 5.2620058 ,  1.25255969])
+</pre><p/>
+
+This tells us that the largest eigenvalue corresponds to the
+direction <tt>[0.57, -0.82]</tt> and the second largest corresponds to
+the direction <tt>[-0.82, -0.57]</tt>.  We can project the data onto
+the first eigenvalue and plot it in red, and the second eigenvalue in
+green.  (Unfortunately we have to do some ugly reshaping to get
+dimensions to match up.)<p/>
+
+<pre>
+>>> x0 = dot(dot(x, Z[0,:]).reshape(1000,1), Z[0,:].reshape(1,2))
+>>> x1 = dot(dot(x, Z[1,:]).reshape(1000,1), Z[1,:].reshape(1,2))
+>>> plot(x[:,0], x[:,1], 'b.', x0[:,0], x0[:,1], 'r.', x1[:,0], x1[:,1], 'g.')
+</pre><p/>
+
+<b>WU1:</b> Depending exactly on your random data, one or more of
+these lines might not pass exactly through the data as we would like
+it to.  Why not?<p/>
+
+Now, back to digits data.  Let's look at some "eigendigits."<p/>
+
+<pre>
+>>> (X,Y) = datasets.loadDigits()
+>>> (P,Z,evals) = dr.pca(X, 784)
+>>> evals
+array([ 0.05465988,  0.04320249,  0.03914405,  0.03072822, 0.02969435, .....
+</pre><p/>
+
+(Warning: this takes about a minute to compute for me.)  Eventually
+the eigenvalues drop to zero.<p/>
+
+<b>WU2:</b> Plot the normalized eigenvalues (include the plot in your
+writeup).  How many eigenvectors do you have to include before you've
+accounted for 90% of the variance?  95%?  (Hint: see
+function <tt>cumsum</tt>.)<p/>
+
+Now, let's plot the top 50 eigenvectors:<p/>
+
+<pre>
+>>> util.drawDigits(Z[1:50,:], arange(50))
+</pre>
+
+<b>WU3:</b> Do these look like digits?  Should they?  Why or why not?
+(Include the plot in your write-up.)<p/>
+
+Next, you need to implement Kernel PCA.  We can first try this on our
+simple 2d data with known covariance and a linear kernel:<p/>
+
+<pre>
+>>> Si = util.sqrtm(array([[3,2],[2,4]]))
+>>> x = dot(randn(1000,2), Si)
+>>> (P, alpha, evals) = dr.kpca(X, 2, kernel.linear)
+>>> evals
+array([  4.00434172e+08,   5.46598996e+01])
+>>> alpha
+array([[  3.16227743e-02,   8.31483667e-02,  -2.75562562e-02, ...,
+         -2.93759139e-03,  -2.93759139e-03,  -5.91730489e-03],
+       [  3.16227802e-02,   5.05064932e-03,   1.38360913e-02, ...,
+         -8.02854635e-05,  -8.02854635e-05,  -2.06104070e-04]])
+</pre><p/>
+
+Now, let's try with some data that vanilla PCA will find
+difficult:<p/>
+
+<pre>
+>>> (a,b) = datasets.makeKPCAdata()
+>>> plot(a[:,0], a[:,1], 'b.', b[:,0], b[:,1], 'r.')
+
+>>> x = vstack((a,b))
+>>> (P,Z,evals) = dr.pca(x, 2)
+>>> Z
+array([[ 0.87703838,  0.48042032],
+       [-0.48042032,  0.87703838]])
+>>> evals
+array([ 6.26494952,  5.72135994])
+</pre><p/>
+
+<b>WU4:</b> Why does vanilla PCA find this data difficult?  What is
+the significance of the relatively large value of the eigenvalues
+here?<p/>
+
+Now, let's look at the projected data:<p/>
+
+<pre>
+>>> Pa = P[0:a.shape[0],:]
+>>> Pb = P[a.shape:-1,:]
+>>> plot(Pa[:,0], randn(Pa.shape[0]), 'b.', Pb[:,0], randn(Pb.shape[0]), 'r.')
+</pre><p/>
+
+Here, we've added a bit of random noise to the Y-axis so that the
+points don't all lie on top of one another.<p/>
+
+<b>WU5:</b> Did PCA do what we might want it to?  Why or why not?
+Include the plot to justify your answer.<p/>
+
+Now, let's use some kernels.<p/>
+
+<pre>
+>>> (P,alpha,evals) = dr.kpca(x, 2, kernel.rbf1)
+>>> evals
+array([  3.55250103e+07,   7.28020391e+01])
+>>> Pa = P[0:a.shape[0],:]
+>>> Pb = P[a.shape[0]:-1,:]
+>>> plot(Pa[:,0], Pa[:,1], 'b.', Pb[:,0], Pb[:,1], 'r.')
+</pre><p/>
+
+<b>WU6:</b> How do the eigenvalues here compare to the linear case?
+What does this tell you?  How does the plot look?  How might this be
+useful for supervised learning?<p/>
+
+<b>WU7:</b> Experiment with different kernels, and perhaps
+interpolations of different kernels.  Try to find a kernel that gets
+as much of the variance on the first two principle components as
+possible.  Report your kernel and a plot of the data projected into 2d
+under that kernel.<p/>
+
+<h3><a name="viterbi">HMMs: Viterbi <i>[30%]</i></a></h3>
+
+Now we start playing with HMMs.  This all goes in <tt>hmm.py</tt>
+Your first job is to implement the Viterbi algorithm.  In order to do
+this, you'll need to implement everything in terms of <i>log
+  probabilities</i>, rather than vanilla probabilities.  The key
+things to remember are: instead of multiplying, add; instead of one,
+use zero; instead of zero, use <tt>-inf</tt>.<p/>
+
+We'll begin by testing this on the data from HW11:<p/>
+
+<pre>
+>>> (a,b,pi) = datasets.getHMMData()
+>>> a
+array([[ 0.66666667,  0.33333333],
+       [ 0.5       ,  0.5       ]])
+>>> b
+array([[ 0.66666667,  0.25      ,  0.08333333],
+       [ 0.25      ,  0.25      ,  0.5       ]])
+>>> pi
+array([ 0.5,  0.5])
+
+>>> hmm.viterbi(array([0,1,1,2]), a, b, pi)
+array([0, 0, 0, 1])
+
+>>> hmm.viterbi(array([0,2,1,2]), a, b, pi)
+array([0, 1, 1, 1])
+</pre><p/>
+
+The observation sequences are Hot Cold Cold Wet and Hot Wet Cold Wet,
+respectively.  The inferred latent state sequences are G G G B and G B
+B B, respectively.<p/>
+
+<i>If you need help debugging:</i> I added statements to
+print <tt>al</tt> and <tt>ze</tt> at the end of the viterbi function.
+Here's the output I get:<p/>
+
+<pre>
+>>> hmm.viterbi(array([0,1,1,2]), a, b, pi)
+[[-0.69314718 -1.5040774  -3.29583687 -5.08759634 -7.16703788]
+ [-0.69314718 -2.19722458 -3.98898405 -5.78074352 -7.16703788]]
+[[-1  0  0  0  1]
+ [-1  0  0  0  1]]
+array([0, 0, 0, 1])
+
+>>> hmm.viterbi(array([0,2,1,2]), a, b, pi)
+[[-0.69314718 -1.5040774  -3.58351894 -5.37527841 -7.04925484]
+ [-0.69314718 -2.19722458 -3.58351894 -5.66296048 -7.04925484]]
+[[-1  0  1  0  1]
+ [-1  0  1  1  1]]
+array([0, 1, 1, 1])
+</pre><br/>
+<b>End update</b><p/>
+
+Note that Viterbi did something magical: when we changed the second
+observation from Cold to Wet, both the second and third latent states
+changed!  <b>WU8:</b> find two <i>different</i> observation sequences
+of length four that differ only in one place, but differ in more than
+one place in the guessed output.<p/>
+
+<h3><a name="fb">HMMs: Forward-backward <i>[50%]</i></a></h3>
+
+Our last task is to implement forward-backward.  It is <i>very
+  easy</i> to make small and hard-to-identify errors here.  I strongly
+  recommend writing down exactly what you want to compute before you
+  start implementing.  However, you will be able to copy and past a
+  bunch from your Viterbi implementation.<p/>
+
+One thing that becomes a problem for forward-backward that's not a
+problem in Viterbi has to do with log probabilities.  In Viterbi, you
+had to compute the log probability that you came from state 0 and
+the log probability that you came from state 1 and then just take the
+max of the two.  In forward-backward, you actually have to <i>add</i>
+the probabilities.  But how can you do this when they're stored as log
+probabilities?!  A magical function, <tt>util.addLog</tt> will do this
+for you.  Let's see how it works:
+
+<pre>
+>>> 0.5 + 0.25
+0.75
+>>> log(0.75)
+-0.2876820724517809
+>>> util.addLog( log(0.5) , log(0.25) )
+-0.2876820724517809
+</pre>
+
+If you say <tt>addLog(a,b)</tt> then it's effectively
+computing <tt>log(exp(a) + exp(b))</tt>, but in such a way that
+there's no numeric underflow.  If you're curious, you're encouraged to
+look at the code to see how it works!<p/>
+
+So, keep in mind that: you replace probability multiplication with log
+probability addition, you replace one with zero, replace zero with
+-inf, and you can now replace probability addition with log
+probability <tt>addLog</tt>ition.<p/>
+
+Now, armed with this new tool, let's implement the forward algorithm.
+Once you've got a solution, here's some debugging help based on the
+same data we had from the Viterbi case:<p/>
+
+<pre>
+>>> hmm.forward(array([0,1,1,2]), a, b, pi)
+array([[-0.69314718, -1.25624123, -2.67140358, -4.06259134, -5.56850996],
+       [-0.69314718, -1.75093747, -3.09162132, -4.47051216, -5.70230466]])
+
+>>> hmm.forward(array([0,2,1,2]), a, b, pi)
+array([[-0.69314718, -1.25624123, -2.82648449, -4.11756738, -5.58815463],
+       [-0.69314718, -1.75093747, -2.96983593, -4.47862365, -5.71699198]])
+</pre><p/>
+
+From there, you can move on to the backward algorithm.  Here's some
+similar debugging help:
+
+<pre>
+>>> hmm.backward(array([0,1,1,2]), a, b, pi)
+array([[-4.56743938, -4.17757522, -2.89037176, -2.48490665,  0.        ],
+       [-5.5405585 , -4.13148411, -2.61843804, -0.69314718,  0.        ]])
+
+>>> hmm.backward(array([0,2,1,2]), a, b, pi)
+array([[-4.6660574 , -5.27618751, -2.89037176, -2.48490665,  0.        ],
+       [-5.37008359, -3.43833693, -2.61843804, -0.69314718,  0.        ]])
+</pre>
+
+I've provided a <tt>sanityCheck</tt> function that ensures that you
+get the same value for "sum al_i be_i" for all time positions.<p/>
+
+<pre>
+>>> al = hmm.forward(array([0,1,1,2]), a, b, pi)
+>>> be = hmm.backward(array([0,1,1,2]), a, b, pi)
+>>> hmm.sanityCheck(al, be)
+</pre>
+
+If it prints something, that's bad!<p/>
+
+Finally, we have to implement parameter re-estimation based on the
+forward and backward tables.  This goes in <tt>reestimate</tt>.
+Again, you'll need to use the magic of <tt>addLog</tt> to make this
+work.  At the end, <tt>pi</tt> should contain <i>log probabilities</i>
+for the pi value.  The <tt>normalizeLog</tt> function will turn an
+unnormalized vector of log probabilities into a normalized vector of
+probabilities.  Here's an example of how it works:
+
+<pre>
+>>> v = log(array([1,2,2,3,2]))
+>>> v
+array([ 0.        ,  0.69314718,  0.69314718,  1.09861229,  0.69314718])
+>>> util.normalizeLog(v)
+array([ 0.1,  0.2,  0.2,  0.3,  0.2])
+</pre><p/>
+
+What it's done is <tt>addLog</tt>ed all the values in the vector and
+then used this as a normalization constant.  It turns the result into
+a bunch of probabilities.<p/>
+
+<i>Big hint:</i> In the notes and the book and elsewhere, it makes a
+big deal out of re-estimating values as the fraction of something that
+you care about (expected counts) to the sum of expected counts.  It's
+not worth computing the denominators.  Just compute the numerators and
+let <tt>normalizeLog</tt> ensure that these probabilities sum to one.
+(This is all the denominator is doing, anyway).<p/>
+
+Here's re-estimation in practice:<p/>
+
+<pre>
+>>> al = hmm.forward(array([0,1,1,2]), a, b, pi)
+>>> be = hmm.backward(array([0,1,1,2]), a, b, pi)
+>>> (a_new, b_new, pi_new) = hmm.reestimate(array([0,1,1,2]), al, be, a, b, pi)
+>>> a_new
+array([[ 0.53662942,  0.46337058],
+       [ 0.39886289,  0.60113711]])
+>>> b_new
+array([[ 0.35001693,  0.55333559,  0.09664748],
+       [ 0.14235731,  0.44259786,  0.41504483]])
+>>> pi_new
+array([ 0.72574077,  0.27425923])
+</pre><p/>
+
+And here's another one:<p/>
+
+<pre>
+>>> al = hmm.forward(array([0,2,1,2]), a, b, pi)
+>>> be = hmm.backward(array([0,2,1,2]), a, b, pi)
+>>> (a_new, b_new, pi_new) = hmm.reestimate(array([0,2,1,2]), al, be, a, b, pi)
+>>> a_new
+array([[ 0.34624522,  0.65375478],
+       [ 0.35236106,  0.64763894]])
+>>> b_new
+array([[ 0.43532693,  0.30443136,  0.26024171],
+       [ 0.13435433,  0.21603434,  0.64961132]])
+>>> pi_new
+array([ 0.66907982,  0.33092018])
+</pre><p/>
+
+Once you've got this all set up, we can run EM on this single
+example:<p/>
+
+<pre>
+>>> (a_em,b_em,pi_em,logProbs) = hmm.runEM(array([0,1,1,2]), 2, 3)
+
+iteration 1... log probability -5.25485
+iteration 2... log probability -4.15148
+iteration 3... log probability -4.14962
+iteration 4... log probability -4.14593
+iteration 5... log probability -4.13452
+iteration 6... log probability -4.09672
+iteration 7... log probability -3.99093
+iteration 8... log probability -3.80666
+iteration 9... log probability -3.64349
+iteration 10... log probability -3.49871
+iteration 11... log probability -3.29489
+iteration 12... log probability -3.0354
+iteration 13... log probability -2.83776
+iteration 14... log probability -2.78245
+iteration 15... log probability -2.77644
+iteration 16... log probability -2.77452
+iteration 17... log probability -2.77356
+iteration 18... log probability -2.77308
+iteration 19... log probability -2.77283
+iteration 20... log probability -2.77271
+iteration 21... log probability -2.77265
+iteration 22... log probability -2.77262
+iteration 23... log probability -2.7726
+iteration 24... log probability -2.7726
+iteration 25... log probability -2.77259
+...
+iteration 50... log probability -2.77259
+
+>>> a_em
+array([[  2.54354295e-293,   1.00000000e+000],
+       [  1.00000000e+000,   5.67486661e-014]])
+>>> b_em
+array([[  5.00000000e-001,   5.00000000e-001,   1.49055507e-282],
+       [  0.00000000e+000,   5.00000000e-001,   5.00000000e-001]])
+>>> pi_em
+array([ 1.,  0.])
+</pre>
+
+<i>Note:</i> There is internal randomization so you won't necessary
+get these exact results: try running a couple of times.<p/>
+
+<b>WU9:</b> Why does EM settle in this configuration?  What is it
+saying?  What happens when you use three states instead of two?
+What's the resulting probability of the data?  What about four states?
+What happens and why?<p/>
+
+Now, we do some fun data.  Take a look at <tt>words.txt</tt>.  This
+contains a small news article.  We're going to run EM on this data
+where each <i>character</i> is an observation.  We can load this data
+as:<p/>
+
+<pre>
+>>> (words, wordsDict) = datasets.readCharacterFile("words.txt")
+>>> words
+array([ 8,  1, 22, ..., 12,  5, 19])
+>>> wordsDict[words]
+array(['h', 'a', 'v', ..., 'l', 'e', 's'], 
+      dtype='|S1')
+</pre><p>
+
+A space character has gotten translated to observation 0, and then "a"
+is 1, "b" is 2, ..., and "z" is 27.  There are no other characters
+allowed.
+
+<b>WU10:</b> Run EM on this data using two states.  Run it a few times
+until you get a final log probability at least -9250.  (It should
+happen in two or three trials.  This will take a few minutes to run.)
+When you do this, it will print out the resulting initial state
+probabilities, transition probabilities and emission probabilities.
+What has it learned?  Include all of this output in your write-up.
+
+
+</body>
+</html>
+

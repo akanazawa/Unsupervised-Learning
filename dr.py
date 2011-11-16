@@ -29,16 +29,28 @@ def pca(X, K):
 
     # first, we need to center the data
     ### TODO: YOUR CODE HERE
-    util.raiseNotDefined()
-
+    mu = X.mean(0).reshape(1,D)
+    one = ones(N).reshape(N,1)
+    x_centered = X - dot(one, mu)
+    covar = dot(x_centered.transpose() , x_centered)
+    
     # next, compute eigenvalues of the data variance
     #    hint 1: look at 'help(pylab.eig)'
     #    hint 2: you'll want to get rid of the imaginary portion of the eigenvalues; use: real(evals), real(evecs)
     #    hint 3: be sure to sort the eigen(vectors,values) by the eigenvalues: see 'argsort', and be sure to sort in the right direction!
     #             
     ### TODO: YOUR CODE HERE
-    util.raiseNotDefined()
-
+    evals,evecs = eig(covar)
+    # evals = real(evals)
+    # evecs = real(evecs)
+    idx = argsort(evals[::-1])
+    # ########TODO##########
+    Z = []
+    for k in range(K):
+        Z.append( evecs[idx[k]])
+    
+    P = dot(X, Z)
+    Z = array(Z)
     return (P, Z, evals)
 
 

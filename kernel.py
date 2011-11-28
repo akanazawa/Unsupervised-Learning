@@ -1,6 +1,8 @@
 from numpy import *
 from util import *
 
+import pdb
+
 def linear(x,z):
     return dot(x,z)
 
@@ -14,6 +16,7 @@ def rbf0_2(x,z):
     return exp(-0.2 * dot(x-z, x-z))
 
 def rbf0_5(x,z):
+    pdb.set_trace()
     return exp(-0.5 * dot(x-z, x-z))
 
 def rbf1(x,z):

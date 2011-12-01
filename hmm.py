@@ -29,35 +29,31 @@ def viterbi(X, a, b, pi):
     # approrpiate back pointer
     al = zeros((K,T), dtype=float)
     ze = zeros((K,T), dtype=int)
-    pdb.set_trace()
+
     # initialize for t=0
     for k in range(K):
-        al[k,0] = log(pi[k])*b[k, X[0]]
+        al[k,0] = log(pi[k])+log(b[k, X[0]])
         ze[k,0] = -1
-
+        
     # loop for time
     for t in range(1,T):
         for k in range(K):
-            ### TODO: YOUR CODE HERE
-            util.raiseNotDefined()
-            al[k,t] = util.raiseNotDefined()    ### TODO: YOUR CODE HERE
-
-            ze[k,t] = util.raiseNotDefined()    ### TODO: YOUR CODE HERE
-
-
+            # = P(e_t|x_t)max_{x_t-1}{P(x_t|x_{t-1})A(x_{t-1}, t-1)
+            al[k,t] = log(b[k, X[t]]) + max(map(lambda xb4: log(a[k, xb4])+al[xb4,t-1], range(K))) 
+            ze[k,t] = argmax(log(b[k, X[t]]) + map(lambda xb4: log(a[k, xb4])+al[xb4,t-1], range(K))) 
+            
     print al
     print ze
 
     # back track best path
     path = zeros((T,), dtype=int) - 1
 
-    # initialize at end
-    path[T-1] = util.raiseNotDefined()    ### TODO: YOUR CODE HERE
-
+    # initialize at end (end = -1)
+    path[T-1] = argmax( al[:, -1]) 
 
     # recurse backward
     for t in range(T-1,0,-1):
-        path[t-1] = util.raiseNotDefined()    ### TODO: YOUR CODE HERE
+        path[t-1] = ze[path[t], t]    ### TODO: YOUR CODE HERE
 
 
     return path
@@ -100,17 +96,19 @@ def forward(X, a, b, pi):
 
     # initialize for t=0
     for k in range(K):
-        al[k,0] = util.raiseNotDefined()    ### TODO: YOUR CODE HERE
-
+        al[k,0] = log(pi[k])
 
     # loop for time
+    # A(k,t) = P(e_{t-1}|x_t)sum_{x_{t-1}}A(x_{t-1}, t-1)P(x_t|x_{t-1})
+    #        = b(X[t-1]|k) sum_{x_{t-1}} A(x_{t-1},t-1) a(k | x_t-1)
     for t in range(1,T+1):
         for k in range(K):
             val = -inf
-            ### TODO: YOUR CODE HERE
-            util.raiseNotDefined()
-            al[k,t] = val
 
+            thingsToAdd = map(lambda xb4, Xt=X[t-1]: log(b[xb4, Xt]) + log(a[xb4, k])+al[xb4, t-1], range(K))# sum_{x_{t-1}}P(x_t|x_t-1)*al[x_t-1,t-1]
+            for i in thingsToAdd:
+                val = addLog(val, i)
+            al[k,t] = val# log(b[k, X[t-1]]) + val
     return al
 
 def backward(X, a, b, pi):
@@ -120,11 +118,7 @@ def backward(X, a, b, pi):
 
     K,V = a.shape
     # K is the number of states, V is the number of unique observations
-
     T = X.shape[0]
-
-    # run the viterbi algorithm on sequence X
-
     # be[k,t] stores the *log* probability that paths go through
     # state k at time t
     be = zeros((K,T+1), dtype=float)
@@ -140,10 +134,10 @@ def backward(X, a, b, pi):
     for t in range(T-1, -1, -1):
         for k in range(K):
             val = -inf
-            ### TODO: YOUR CODE HERE
-            util.raiseNotDefined()
-            be[k,t] = val
-
+            thingsToAdd = map(lambda xb4: log(a[k, xb4])+be[xb4,t+1], range(K))# sum_{x_{t-1}}P(x_t|x_t-1)*al[x_t-1,t-1]
+            for i in thingsToAdd:
+                val = addLog(val, i)
+            be[k,t] = log(b[k, X[t]]) + val            
     return be
 
 def reestimate(X, al, be, aold, bold, piold):

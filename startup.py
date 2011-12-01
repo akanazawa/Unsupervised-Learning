@@ -63,9 +63,11 @@ plot(Pa[:,0], Pa[:,1], 'b.', Pb[:,0], Pb[:,1], 'r.')
 ####################
 # HMM
 ####################
- (a,b,pi) = datasets.getHMMData()
+(a,b,pi) = datasets.getHMMData()
 hmm.viterbi(array([0,1,1,2]), a, b, pi)
 #array([0, 0, 0, 1])
 
-#hmm.viterbi(array([0,2,1,2]), a, b, pi)
+hmm.viterbi(array([0,2,1,2]), a, b, pi)
 #array([0, 1, 1, 1])
+
+hmm.forward(array([0,1,1,2]), a, b, pi)

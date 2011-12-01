@@ -67,5 +67,9 @@ plot(Pa[:,0], Pa[:,1], 'b.', Pb[:,0], Pb[:,1], 'r.')
 hmm.viterbi(array([0,1,1,2]), a, b, pi)
 #array([0, 0, 0, 1])
 
-#hmm.viterbi(array([0,2,1,2]), a, b, pi)
+hmm.viterbi(array([0,2,1,2]), a, b, pi)
 #array([0, 1, 1, 1])
+
+al = hmm.forward(array([0,1,1,2]), a, b, pi)
+be = hmm.backward(array([0,1,1,2]), a, b, pi)
+hmm.sanityCheck(al,be)

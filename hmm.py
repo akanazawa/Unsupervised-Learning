@@ -4,7 +4,7 @@ from util  import *
 
 def viterbi(X, a, b, pi):
     """
-    here we implement the viterbi algorithm.
+    here we implement the viterbi algorithm
 
     a,b,pi are the model parameters.  that is:
       a[i,j] = p(state_t = j | state_{t-1} = i)

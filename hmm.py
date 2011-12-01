@@ -1,7 +1,7 @@
 from numpy import *
 from pylab import *
 from util  import *
-
+import pdb
 def viterbi(X, a, b, pi):
     """
     here we implement the viterbi algorithm
@@ -27,16 +27,16 @@ def viterbi(X, a, b, pi):
     # al[k,t] stores the *log* probability that the most likely
     # path through state k at time t; ze[k,t] stores the
     # approrpiate back pointer
-    al = zeros((K,T+1), dtype=float)
-    ze = zeros((K,T+1), dtype=int)
-
+    al = zeros((K,T), dtype=float)
+    ze = zeros((K,T), dtype=int)
+    pdb.set_trace()
     # initialize for t=0
     for k in range(K):
-        al[k,0] = log(pi[k])
+        al[k,0] = log(pi[k])*b[k, X[0]]
         ze[k,0] = -1
 
     # loop for time
-    for t in range(1,T+1):
+    for t in range(1,T):
         for k in range(K):
             ### TODO: YOUR CODE HERE
             util.raiseNotDefined()

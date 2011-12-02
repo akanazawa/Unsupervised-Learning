@@ -133,6 +133,7 @@ def drawDigits(X,Y):
     axis('off')
 
 
+
 def addLog(x,y):
   if x == -inf:
     return y

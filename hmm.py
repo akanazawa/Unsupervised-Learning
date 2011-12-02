@@ -104,10 +104,9 @@ def forward(X, a, b, pi):
     for t in range(1,T+1):
         for k in range(K):
             val = -inf
-
-            thingsToAdd = map(lambda xb4, Xt=X[t-1]: log(b[xb4, Xt]) + log(a[xb4, k])+al[xb4, t-1], range(K))# sum_{x_{t-1}}P(x_t|x_t-1)*al[x_t-1,t-1]
-            for i in thingsToAdd:
-                val = addLog(val, i)
+            for xb4 in range(K):
+                # sum_{x_{t-1}}P(x_t|x_t-1)*al[x_t-1,t-1]            
+                val = addLog(val, log(b[xb4, X[t-1]]) + log(a[xb4, k])+al[xb4, t-1])
             al[k,t] = val# log(b[k, X[t-1]]) + val
     return al
 
@@ -134,9 +133,9 @@ def backward(X, a, b, pi):
     for t in range(T-1, -1, -1):
         for k in range(K):
             val = -inf
-            thingsToAdd = map(lambda xb4: log(a[k, xb4])+be[xb4,t+1], range(K))# sum_{x_{t-1}}P(x_t|x_t-1)*al[x_t-1,t-1]
-            for i in thingsToAdd:
-                val = addLog(val, i)
+            # where be contains all the emittion probability of the ones before
+            for xb4 in range(K):
+               val = addLog(val, log(a[k, xb4])+be[xb4,t+1]) #sum_{x_{t+1}}P(x_t|x_t+1)*be[x_t-1,t+1]
             be[k,t] = log(b[k, X[t]]) + val            
     return be
 
@@ -164,19 +163,23 @@ def reestimate(X, al, be, aold, bold, piold):
     # re-estimate start states (pi):
     for k in range(K):
         ### TODO: YOUR CODE HERE
-        util.raiseNotDefined()
-
+        pi[k] = al[k,0] + be[k,0] # al at time 0 with k*be at time 0 with k
+        
     # re-estimate emissions (b):
     for k in range(K):
         ### TODO: YOUR CODE HERE
-        util.raiseNotDefined()
+        for v in range(V):
+            # if x_t==v, add 0 because (1-> 0 in log), else add -inf
+            for t in range(T):
+                b[k,v] = addLog(b[k,v], al[k,t] + be[k,t]) if log(X[t]==v)
 
     # re-estimate transitions (a):
     for k in range(K):
         for k_next in range(K):
             ### TODO: YOUR CODE HERE
-            util.raiseNotDefined()
-
+            for t in range(T):  
+                a[k,k_next] = addLog(a[k,k_next], al[k,t]+be[k_next,t+1]+aold[k,k_next]+bold[k, X[t]])
+            
     # normalize the new probabilities
     pi = normalizeLog(pi)
     for k in range(K):

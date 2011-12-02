@@ -70,4 +70,12 @@ hmm.viterbi(array([0,1,1,2]), a, b, pi)
 hmm.viterbi(array([0,2,1,2]), a, b, pi)
 #array([0, 1, 1, 1])
 
-hmm.forward(array([0,1,1,2]), a, b, pi)
+al = hmm.forward(array([0,1,1,2]), a, b, pi)
+be = hmm.backward(array([0,1,1,2]), a, b, pi)
+hmm.sanityCheck(al,be)
+
+##########
+# parameter re-estimation
+al = hmm.forward(array([0,1,1,2]), a, b, pi)
+be = hmm.backward(array([0,1,1,2]), a, b, pi)
+(a_new, b_new, pi_new) = hmm.reestimate(array([0,1,1,2]), al, be, a, b, pi)

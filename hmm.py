@@ -171,7 +171,8 @@ def reestimate(X, al, be, aold, bold, piold):
         for v in range(V):
             # if x_t==v, add 0 because (1-> 0 in log), else add -inf
             for t in range(T):
-                b[k,v] = addLog(b[k,v], al[k,t] + be[k,t]) if log(X[t]==v)
+                if X[t]==v:
+                    b[k,v] = addLog(b[k,v], al[k,t] + be[k,t]) 
 
     # re-estimate transitions (a):
     for k in range(K):

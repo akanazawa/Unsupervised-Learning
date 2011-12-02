@@ -79,3 +79,11 @@ hmm.sanityCheck(al,be)
 al = hmm.forward(array([0,1,1,2]), a, b, pi)
 be = hmm.backward(array([0,1,1,2]), a, b, pi)
 (a_new, b_new, pi_new) = hmm.reestimate(array([0,1,1,2]), al, be, a, b, pi)
+
+>>> a_new
+array([[ 0.53662942,  0.46337058],
+       [ 0.39886289,  0.60113711]])
+>>> b_new
+array([[ 0.35001693,  0.55333559,  0.09664748],
+       [ 0.14235731,  0.44259786,  0.41504483]])
+>>> pi_new

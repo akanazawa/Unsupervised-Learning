@@ -70,6 +70,12 @@ hmm.viterbi(array([0,1,1,2]), a, b, pi)
 hmm.viterbi(array([0,2,1,2]), a, b, pi)
 #array([0, 1, 1, 1])
 
+###WU 8
+# example 1
+hmm.viterbi(array([0,1,1,1]), a, b, pi) # 0 0 0 0
+hmm.viterbi(array([0,1,2,1]), a, b, pi) # 0 0 1 1
+
+
 al = hmm.forward(array([0,1,1,2]), a, b, pi)
 be = hmm.backward(array([0,1,1,2]), a, b, pi)
 hmm.sanityCheck(al,be)
@@ -80,11 +86,29 @@ al = hmm.forward(array([0,1,1,2]), a, b, pi)
 be = hmm.backward(array([0,1,1,2]), a, b, pi)
 (a_new, b_new, pi_new) = hmm.reestimate(array([0,1,1,2]), al, be, a, b, pi)
 
->>> a_new
-array([[ 0.53662942,  0.46337058],
-       [ 0.39886289,  0.60113711]])
->>> b_new
-array([[ 0.35001693,  0.55333559,  0.09664748],
-       [ 0.14235731,  0.44259786,  0.41504483]])
->>> pi_new
-array([ 0.72574077,  0.27425923])
+# >>> a_new
+# array([[ 0.53662942,  0.46337058],
+#        [ 0.39886289,  0.60113711]])
+# >>> b_new
+# array([[ 0.35001693,  0.55333559,  0.09664748],
+#        [ 0.14235731,  0.44259786,  0.41504483]])
+# >>> pi_new
+# array([ 0.72574077,  0.27425923])
+
+(a_em, b_em, pi_em, logProbs)=hmm.runEM(array([0,1,1,2]),2,3)
+
+# >>> a_em
+# array([[  2.54354295e-293,   1.00000000e+000],
+#        [  1.00000000e+000,   5.67486661e-014]])
+# >>> b_em
+# array([[  5.00000000e-001,   5.00000000e-001,   1.49055507e-282],
+#        [  0.00000000e+000,   5.00000000e-001,   5.00000000e-001]])
+# >>> pi_em
+# array([ 1.,  0.])
+
+# the result says that the states always alternate
+# the first state is always state 0
+# ->
+# P(X_t=0) = 0 -> P(X_t+1) = 1
+
+# with 3 states 

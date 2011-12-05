@@ -164,7 +164,7 @@ def reestimate(X, al, be, aold, bold, piold):
     for k in range(K):
         ### TODO: YOUR CODE HERE
         pi[k] = al[k,0] + be[k,0] # al at time 0 with k*be at time 0 with k
-        
+
     # re-estimate emissions (b):
     for k in range(K):
         ### TODO: YOUR CODE HERE
@@ -172,14 +172,15 @@ def reestimate(X, al, be, aold, bold, piold):
             # if x_t==v, add 0 because (1-> 0 in log), else add -inf
             for t in range(T):
                 if X[t]==v:
-                    b[k,v] = addLog(b[k,v], al[k,t] + be[k,t]) 
+                    b[k,v] = addLog(b[k,v], al[k,t]+be[k,t]) 
 
     # re-estimate transitions (a):
-    for k in range(K):
-        for k_next in range(K):
+    for i in range(K):
+        for j in range(K):
             ### TODO: YOUR CODE HERE
             for t in range(T):  
-                a[k,k_next] = addLog(a[k,k_next], al[k,t]+be[k_next,t+1]+aold[k,k_next]+bold[k, X[t]])
+                a[i,j] = addLog(a[i,j], 
+                            al[i,t]+log(aold[i,j])+log(bold[i, X[t]])+be[j,t+1])
             
     # normalize the new probabilities
     pi = normalizeLog(pi)

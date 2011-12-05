@@ -15,7 +15,7 @@ def pca(X, K):
     the first dimension is the higest variance,
     the second dimension is the second higest variance, etc.
 
-
+    Z is the projection matrix (D*K) that projects the data into
     the low dimensional space (i.e., P = X * Z).
 
     and evals, a K dimensional array of eigenvalues (sorted)
@@ -29,41 +29,25 @@ def pca(X, K):
     if K > D:
         K = D
 
-    # first, we need to center the data
-    ### TODO: YOUR CODE HERE
-    mu = X.mean(0)
-    # python does element wise operation automatically
-    covar = dot((X-mu).T, X-mu)/N # need extra re-normalization
-    #    mu = X.mean(0).reshape(1,D)
-    #    one = ones(N).reshape(N,1)
-    #    x_centered = X - dot(one, mu)
-    #    covar = dot(x_centered.transpose() , x_centered)
+    X_c = X - X.mean(0) # center the data
+    covar = dot((X_c).T, X_c)/N # need extra re-normalization
     
     # next, compute eigenvalues of the data variance
-    #    hint 1: look at 'help(pylab.eig)'
-    #    hint 2: you'll want to get rid of the imaginary portion of the eigenvalues; use: real(evals), real(evecs)
-    #    hint 3: be sure to sort the eigen(vectors,values) by the eigenvalues: see 'argsort', and be sure to sort in the right direction!
-    #             
-    ### TODO: YOUR CODE HERE
+
+	# HAL's Hints
+    # +  hint 1: look at 'help(pylab.eig)'
+    # +  hint 2: you'll want to get rid of the imaginary portion of the eigenvalues; use: real(evals), real(evecs)
+    # +  hint 3: be sure to sort the eigen(vectors,values) by the eigenvalues: see 'argsort', and be sure to sort in the right direction!
 
     evals,evecs = eig(covar)
     idx = argsort(real(evals))[::-1] # get the sort idx and reverse the order
 
-    # sort, remove img components, and get the first K components
+    # sort, remove imaginary components, and get the first K components
     evals = real(evals[idx])[0:K] 
     Z = real(evecs[idx])[0:K] # the projection matrix
     
-    # idx = argsort(evals[::-1]) #ran this works for here, but in general i think it's
-    # idx = argsort(evals); idx= idx[::-1]
-    # ########TODO##########
-    # Z = []
-    # for k in range(K):
-    #     Z.append( evecs[idx[k]])
-    # # in matlab notation this is : Z = evecs[idx][0:K]
-    
-    P = dot(X-mu, Z) # should be on centered data i think
-    #    P = dot(X, Z) 
-    #    Z = array(Z)
+	# Project the centered data    
+    P = dot(X_c, Z)
     return (P, Z, evals)
 
 def kpca(X, K, kernel):
@@ -77,41 +61,53 @@ def kpca(X, K, kernel):
     parameters) for the kernel PCA decomposition.
     '''
 
-    ### TODO: YOUR CODE HERE
     N,D = X.shape
-    mu = X.mean(0)
-    X_c = X-mu # centered
-    # We want to compute K = X_cX_c' where X_c = X-mu, the centered kernel matrix
-    # then X_cX_c = (X-mu)(X-mu)' = XX' - XM' - MX' - MM
-    # where M =  1/N * ones((N,N))*X
-    # let K0 = XX', the uncentered kernel matrix
-    # then XM' = 1/N*X(ones(N,N)*X)' = 1/N*XX'*ones(N,N) = K_0/N
-    # similarly, MX' = K_0/N, and MM' = 1/N^2(K_0)
-    # so D = K_0 - 2K_0/N + K_0/N^2
+    X_c = X - X.mean(0) # center the data
 
+	# Compute K0
     K0 = zeros((N, N))
     for i in range(N):
         for j in range(N):
             K0[i][j] = kernel(X[i, :], X[j, :])
     
-    #center = (K0 - (1/N)*K0 - K0*(1/N) + (1/N)*K0*(1/N))
-    X_c = (K0 - (1/N)*K0 - K0*(1/N) + (1/N)*K0*(1/N))
-    covar = X_c/N #dot((X_c).T, X_c)/N # need extra re-normalization
+    # Kernel = (K0 - H*K0 - K0*H + H*K0*H)
+	H = ones((N, N))/N
+    Ker = (K0 - dot(H,K0) - dot(K0,H) + dot(dot(H,K0),H))
 
     # we're solving the equation Kv = N lam v
-    evals,evecs = eig(covar)
+    evals,evecs = eig(Ker)
     # get the sort idx and reverse the order
     idx = argsort(real(evals))[::-1]
     
     # sort, remove img components, and get the first K components
     # need to normalize evals N*lamda*K*alpha = K*alpha
-    evals = real(evals[idx])[0:K]
-    Z = real(evecs[idx])[0:K]
-    alpha =real(evecs[idx])[0:K]
+    evals = real(evals[idx])[0:K] / N
+    alpha = real(evecs[idx])[0:K]
+    Z = zeros((K, N))
+
+#	pdb.set_trace()
+
     # normalize alpha
     for i in range(K):
-        alpha[i,:] = alpha[i,:]/sqrt(evals[i])
-    pdb.set_trace()
-    P = dot(X_c, alpha')
+        Z[i] = alpha[i:(i+1),:] / (sqrt(dot(alpha[i:(i+1),:], alpha[i:(i+1),:].T) * evals[i]))
+        print evals[i] * dot(Z[i:(i+1),:], Z[i:(i+1),:].T)
+        print dot(Z[i:(i+1),:], (dot(Ker, Z[i:(i+1),:].T) / N)
+        #print sum(dot(Ker, Z[i:(i+1),:].T) - (N * evals[i] *  alpha[i:(i+1),:].T)
+        pdb.set_trace()
 
-    return (P, alpha, evals)
+    P = dot(Ker, Z.T)
+    #P = dot(Ker, alpha.T)
+
+    return (P, Z, evals)
+    #return (P, alpha, evals)
+
+
+
+
+
+
+
+
+
+
+

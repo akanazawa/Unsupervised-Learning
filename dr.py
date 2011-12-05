@@ -94,16 +94,24 @@ def kpca(X, K, kernel):
         for j in range(N):
             K0[i][j] = kernel(X[i, :], X[j, :])
     
-    covar = (K0 - (1/N)*K0 - K0*(1/N) + (1/N)*K0*(1/N)) 
+    #center = (K0 - (1/N)*K0 - K0*(1/N) + (1/N)*K0*(1/N))
+    X_c = (K0 - (1/N)*K0 - K0*(1/N) + (1/N)*K0*(1/N))
+    covar = X_c/N #dot((X_c).T, X_c)/N # need extra re-normalization
 
     # we're solving the equation Kv = N lam v
     evals,evecs = eig(covar)
-
-    idx = argsort(real(evals))[::-1] # get the sort idx and reverse the order
+    # get the sort idx and reverse the order
+    idx = argsort(real(evals))[::-1]
+    
     # sort, remove img components, and get the first K components
+    # need to normalize evals N*lamda*K*alpha = K*alpha
     evals = real(evals[idx])[0:K]
     Z = real(evecs[idx])[0:K]
-    alpha =real(evecs[idx]) #??
-    P = dot(X-mu, Z)
-    
+    alpha =real(evecs[idx])[0:K]
+    # normalize alpha
+    for i in range(K):
+        alpha[i,:] = alpha[i,:]/sqrt(evals[i])
+    pdb.set_trace()
+    P = dot(X_c, alpha')
+
     return (P, alpha, evals)

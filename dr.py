@@ -89,9 +89,10 @@ def kpca(X, K, kernel):
 
     # normalize alpha
     for i in range(K):
-        Z[i] = alpha[i:(i+1),:] / (sqrt(dot(alpha[i:(i+1),:], alpha[i:(i+1),:].T) * evals[i]))
+        Z[i] = alpha[i:(i+1),:] / (sqrt(evals[i]))
+        #Z[i] = alpha[i:(i+1),:] / (sqrt(dot(alpha[i:(i+1),:], alpha[i:(i+1),:].T) * evals[i]))
         print evals[i] * dot(Z[i:(i+1),:], Z[i:(i+1),:].T)
-        print dot(Z[i:(i+1),:], (dot(Ker, Z[i:(i+1),:].T) / N)
+        print dot(Z[i:(i+1),:], (dot(Ker, Z[i:(i+1),:].T) / N))
         #print sum(dot(Ker, Z[i:(i+1),:].T) - (N * evals[i] *  alpha[i:(i+1),:].T)
         pdb.set_trace()
 
@@ -100,14 +101,3 @@ def kpca(X, K, kernel):
 
     return (P, Z, evals)
     #return (P, alpha, evals)
-
-
-
-
-
-
-
-
-
-
-

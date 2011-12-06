@@ -65,7 +65,7 @@ significance of the relatively large value of the eigenvalues here?}\vspace{0.1i
 
 \subsection{WU5}
 \textsf{Did PCA do what we might want it to? Why or why not? Include
-the plot to justify your answer.}
+the plot to justify your answer.}\vspace{0.1in}
 
 % \begin{figure}[!ht]
 %   \begin{center}
@@ -116,6 +116,14 @@ differ in one.
 What happens when you use three states instead of two? 
 What's the resulting probability of the data? 
 What about four states? What happens and why?}\vspace{0.1in}
+EM settles in this configuration because it is a local minima. The
+$\hat \pi = [1,0,0]$ means that we always start at state 0. We also get $P(X_t=0|X_{t-1}=0)= 0$,
+i.e. when we transition we always go to a different state. All
+together the results say that states alternate and that is the most
+likely state sequences.
+
+If we use three states instead of two, similar behavior happens with
+$\hat \pi$. One state has a probability of 1 and rest gets 0. For 
 
 \subsection{WU10}
 \textsf{Run EM on this data using two states. 

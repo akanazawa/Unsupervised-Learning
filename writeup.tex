@@ -118,18 +118,27 @@ some of the eignvectors in figure \ref{figures:WU3a} may look like simple digit 
 \textsf{Why does vanilla PCA find this data difficult? What is the
 significance of the relatively large value of the eigenvalues
 here?}\vspace{0.1in}
-Vanilla PCA can only deal with data that is linearly separable. In this dataset, the data is not linearly separable, so vanilla PCA cannot handle it well. 
-The eigenvalues are large in both directions, that is, the variance is large in both directions. Neither of the eigenvectors maximize the variance of the data. This is consistence with the data plot, where the data is in a circle. So none of the directions linear PCA gives us is significantly better than the other.  
+---
+AJ: Eigen values are: array([ 6.181042  ,  5.30205265]), it's not
+relatively large.  It in the same order as the evals done on dataset
+before(([ 5.2620058 ,  1.25255969]). I think he's asking for
+the significance of both being large.
+----
 
-Vanilla PCA can only deal with the data that is linear separable. In this
-dataset, the data is not linear separable, so vanilla PCA cannot handle it
-well.
-The eigenvalues are large in both directions, that is, the variance is large
-in both directions. Neither of the eigenvectors maximize the variance of the
-data. This is consistence with the data plot, where the data is in a circle.
-So none of the directions linear PCA gives us is significantly better than
-the other.
+PCA tries to find patterns in dataset that highlights the differences
+and similarities. Once we find such patterns, we can reduce the
+dimensionality of the data without losing too much
+information. Vanilla PCA will find this data difficult to characterize
+because in 2D, there is no unique pattern in the data because the points are distributed uniformly in
+all directions as a circle.
 
+The eigenvalues are relatively large in both directions signifies the
+fact that there is no one direction that maximizes the variance. It
+means that direction of both first and second eigenvectors equally
+maximizes the variance. 
+
+---
+Rans part:
 Because the original dataset is a sphere shape, so the 2 eigenvalues are
 almost equal.  No matter which eigenvector is chosen, there will be almost
 half of the information lost. Linear PCA doesn't work well on this data set.
@@ -139,33 +148,45 @@ restore the data, it looks nothing like the original data.
 \subsection{WU5}
 \textsf{Did PCA do what we might want it to? Why or why not? Include
 the plot to justify your answer.}\vspace{0.1in}
-
-% \begin{figure}[!ht]
-%   \begin{center}
-%   \caption{Pca doing what we want..}
-%   \includegraphics[width=4.5in]{pca2.png}
-%   \label{figures:wu61}
-%   \end{center}
-% \end{figure}
+PCA did not do what we might want it to. We wanted the projected data to seperate the
+red data and the blue data points. As suggested in WU4, PCA does not
+work well because in 2D there is no good direction that maximizes the
+variance of this data.
+\begin{figure}[!ht]
+  \begin{center}
+  \caption{projected data using eigenvectors found by vanilla PCA}
+  \includegraphics[width=4.5in]{WU5.pdf}
+  \label{figures:wu5}
+  \end{center}
+\end{figure}
 
 \subsection{WU6}
 \textsf{How do the eigenvalues here compare to the linear case? What
 does this tell you? How does the plot look? How might this be useful
 for supervised learning?}\vspace{0.1in}
-The eigenvalues seperates data into two
-seperate clusters better than the linear case. This is useful for
-supervised learning because then since we konw the lables, we can try
-different kernels, use the one that gives us the largest margin to
-make the training data seperable, then train discriminative
-classifiers on the data. It allows us to make linearly inseperable
-data into seperable ones before we feed it to a classifier.
-% \begin{figure}[!ht]
-%   \begin{center}
-%   \caption{Using KPCA}
-%   \includegraphics[width=4.5in]{pca2.png}
-%   \label{figures:wu61}
-%   \end{center}
-% \end{figure}
+
+Compared to the linear case, the eigenvalues are much smaller in
+magnitude $(0.08121919,  0.05313867)$, and the ratio of the first
+eigenvalue to the second eigenvalue is around 1.5, where with the
+linear case the ratio was very close to 1. This means that this KPCA
+managed to find a pattern in the data better than the linear one.
+
+The projected data manages to cluster the red datapoints and blue
+datapoints seperately, although the margin is very small. 
+This is useful for supervised learning because we can use KPCA
+projection to cluster the training data
+points that belong in the same class as much as possible, and feed
+that projected data to the classifier.
+Since we have the labels we can try different kernels and use the one
+that gives us the largest margin and make the training data linearly
+seperable so that learning will be easier for classifiers.
+\begin{figure}[!ht]
+  \begin{center}
+  \caption{Using KPCA}
+  \includegraphics[width=4.5in]{WU6.pdf}
+  \label{figures:wu61}
+  \end{center}
+\end{figure}
 
 \subsection{WU7}
 \textsf{Experiment with different kernels, and perhaps interpolations 
@@ -195,11 +216,11 @@ differ in one.
 What happens when you use three states instead of two? 
 What's the resulting probability of the data? 
 What about four states? What happens and why?}\vspace{0.1in}
-EM settles in this configuration because it is a local minima. The
+EM settles in this configuration because it has found a local minima. The
 $\hat \pi = [1,0,0]$ means that we always start at state 0. We also get $P(X_t=0|X_{t-1}=0)= 0$,
 i.e. when we transition we always go to a different state. All
-together the results say that states alternate and that is the most
-likely state sequences.
+together the results say that the most likely state sequence is the
+one where states alternate every step.
 
 If we use three states instead of two, similar behavior happens with
 $\hat \pi$. One state has a probability of 1 and the rest gets 0. But

@@ -11,8 +11,12 @@ dot(x.T,x) / real(x.shape[0])
 # run PAC on this data
 (P, Z, evals) = dr.pca(x, 2)
 # project the data
-x0 = dot(dot(x, Z[0,:]).reshape(1000,1), Z[0,:].reshape(1,2))
-x1 = dot(dot(x, Z[1,:]).reshape(1000,1), Z[1,:].reshape(1,2))
+# x0 = dot(dot(x, Z[0,:]).reshape(1000,1), Z[0,:].reshape(1,2))
+# x1 = dot(dot(x, Z[1,:]).reshape(1000,1), Z[1,:].reshape(1,2))
+
+x0 = dot(dot(x, Z[:, 0]).reshape(1000,1), Z[:, 0].reshape(1,2))
+x1 = dot(dot(x, Z[:, 1]).reshape(1000,1), Z[:, 1].reshape(1,2))
+
 plot(x[:,0], x[:,1], 'b.', x0[:,0], x0[:,1], 'r.', x1[:,0], x1[:,1], 'g.')
 axis((-8.0, 8.0, -8.0, 8.0))
 
@@ -64,22 +68,28 @@ evals
 plot(a[:,0], a[:,1], 'b.', b[:,0], b[:,1], 'r.')
 
 x = vstack((a,b))
+x_c = (x-mean(x))/std(x)
 (P,Z,evals) = dr.pca(x, 2)
 
 Pa = P[0:a.shape[0],:]
-Pb = P[a.shape[0]:-1,:]
+Pb = P[a.shape[0]:,:]
 plot(Pa[:,0], randn(Pa.shape[0]), 'b.', Pb[:,0], randn(Pb.shape[0]), 'r.')
+
+# projection of the data with each eig vectors...
+# x0 = dot(dot(x, Z[:, 0]).reshape(473,1), Z[:, 0].reshape(1,2))
+# x1 = dot(dot(x, Z[:, 1]).reshape(473,1), Z[:, 1].reshape(1,2))
+# pro0a = x0[0:a.shape[0],:]
+# pro0b = x0[a.shape[0]:,:]
+# plot( pro0a[:,0], 'b.', pro0b[:,0], 'r.', )
 
 # now use KCPA
 (P,alpha,evals) = dr.kpca(x, 2, kernel.rbf1)
 evals
-# should be
-# array([  3.55250103e+07,   7.28020391e+01])
-# (don't really trust this)
-Pa = P[0:a.shape[0],:]
-Pb = P[a.shape[0]:-1,:]
-plot(Pa[:,0], Pa[:,1], 'b.', Pb[:,0], Pb[:,1], 'r.')
 
+Pa = P[0:a.shape[0],:]
+Pb = P[a.shape[0]:,:]
+plot(Pa[:,0], Pa[:,1], 'b.', Pb[:,0], Pb[:,1], 'r.')
+plot(alpha[:, 0],'r.')
 ####################
 # HMM
 ####################

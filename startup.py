@@ -20,10 +20,15 @@ plot(x[:,0], x[:,1], 'b.', x0[:,0], x0[:,1], 'r.', x1[:,0], x1[:,1], 'g.')
 (P,Z,evals) = dr.pca(X, 784)
 evals
 
+# draw the top 50 eigvectors
+(X,Y) = datasets.loadDigits()
+(P,Z,evals) = dr.kpca(X, 10, kernel.rbf1)
+util.drawDigits(Z[:,0:49].T,arange(50))
+
 #FOR WU2
 N, D = X.shape
 # plot normalized eigenvalues
-evals = evals/norm(evals)
+evals = evals/sum(evals)
 plot(evals, 'r.')
 
 # find where we have 90% of the var
@@ -33,9 +38,6 @@ within90 = (summed <= total*.90).nonzero()[0]
 within90[-1]+1 # this is how far we have to go to include 90% of the total var
 within95 = (summed <= total*.95).nonzero()[0]
 within95[-1]+1
-
-# draw the top 50 eigvectors
-util.drawDigits(Z[1:50, :], arange(50)
 
 # ---------- KPCA ---------- #
 Si = util.sqrtm(array([[3,2],[2,4]]))

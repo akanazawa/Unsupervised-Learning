@@ -40,11 +40,13 @@ def pca(X, K):
     # +  hint 3: be sure to sort the eigen(vectors,values) by the eigenvalues: see 'argsort', and be sure to sort in the right direction!
 
     evals,evecs = eig(covar)
+
     idx = argsort(real(evals))[::-1] # get the sort idx and reverse the order
+    idx = idx[0:K]
 
     # sort, remove imaginary components, and get the first K components
-    evals = real(evals[idx])[0:K] 
-    Z = real(evecs[idx])[0:K] # the projection matrix
+    evals = real(evals[idx])
+    Z = real(evecs[:, idx]) # the projection matrix
     
 	# Project the centered data    
     P = dot(X_c, Z)
@@ -78,26 +80,23 @@ def kpca(X, K, kernel):
     evals,evecs = eig(Ker)
     # get the sort idx and reverse the order
     idx = argsort(real(evals))[::-1]
-    
+    idx = idx[0:K]
+
     # sort, remove img components, and get the first K components
     # need to normalize evals N*lamda*K*alpha = K*alpha
-    evals = real(evals[idx])[0:K] / N
-    alpha = real(evecs[idx])[0:K]
-    Z = zeros((K, N))
+    evals = real(evals[idx]) / N
+    alpha = real(evecs[:, idx])
+    Z = zeros((N, K))
 
 #	pdb.set_trace()
 
     # normalize alpha
     for i in range(K):
-        Z[i] = alpha[i:(i+1),:] / (sqrt(evals[i]))
-        #Z[i] = alpha[i:(i+1),:] / (sqrt(dot(alpha[i:(i+1),:], alpha[i:(i+1),:].T) * evals[i]))
-        print evals[i] * dot(Z[i:(i+1),:], Z[i:(i+1),:].T)
-        print dot(Z[i:(i+1),:], (dot(Ker, Z[i:(i+1),:].T) / N))
-        #print sum(dot(Ker, Z[i:(i+1),:].T) - (N * evals[i] *  alpha[i:(i+1),:].T)
-        pdb.set_trace()
+        Z[:,i:(i+1)] = alpha[:,i:(i+1)] / (sqrt(evals[i]))
+        #Z[:,i:(i+1)] = alpha[:,i:(i+1)] / (sqrt(dot(alpha[:,i:(i+1)].T, alpha[:,i:(i+1)]) * evals[i])) # This works too but the previous line should be more efficient
+        #print evals[i] * dot(Z[:,i:(i+1)].T, Z[:,i:(i+1)]) # Should be 1
+        #print (dot(Z[:,i:(i+1)].T, dot(Ker, Z[:,i:(i+1)])) / N) # Should be 1
 
-    P = dot(Ker, Z.T)
-    #P = dot(Ker, alpha.T)
+    P = dot(Ker, Z)
 
     return (P, Z, evals)
-    #return (P, alpha, evals)

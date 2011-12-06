@@ -34,30 +34,85 @@
 \textsf{Depending exactly on your random data, one or more of these lines might
 not pass exactly through the data as we would like it to. Why not?}\vspace{0.1in}
 
+As shown in figure \ref{figures:WU1}, the eigenvectors are actually what we would
+expect, with the first vector accounting for the axis of skew and the second vector
+orthogonal to the first. This is intuitive since the skew should be the primary
+source of variance, and the second eigenvector should simply be perpendicular
+to the first since it's a two dimensional projected space.
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4in]{WU1.pdf}
+  \caption{Eigenvectors and projected data}
+  \label{figures:WU1}
+  \end{center}
+\end{figure}
+
 \subsection{WU2}
 \textsf{Plot the normalized eigenvalues (include the plot in your writeup). 
 How many eigenvectors do you have to include before you've accounted 
 for 90\% of the variance? 95\%? (Hint: see function cumsum.)}\vspace{0.1in}
 
-% \begin{figure}[!ht]
-%   \begin{center}
-%   \caption{Plot of the normalized eigenvalues}
-%   \includegraphics[width=4.5in]{pca.png}
-%   \label{figures:wu61}
-%   \end{center}
-% \end{figure}
+We need to include 81 eigenvectors to account for 90\% of the variance and
+135 eigenvectors to account for 95\%. The eigenvalues are shown in figure
+\ref{figures:WU2a} and the cumulative sum of the eigenvalues is shown in
+figure \ref{figures:WU2b} with labels for the two points of interest.
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4in]{WU2_a.pdf}
+  \caption{Plot of the normalized eigenvalues}
+  \label{figures:WU2a}
+  \end{center}
+\end{figure}
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4in]{WU2_b.pdf}
+  \caption{Plot of the normalized eigenvalues}
+  \label{figures:WU2b}
+  \end{center}
+\end{figure}
 
 \subsection{WU3}
 \textsf{Do these look like digits? Should they? Why or why not?
 (Include the plot in your write-up.)}\vspace{0.1in}
 
-% \begin{figure}[!ht]
-%   \begin{center}
-%   \caption{Plot of digits using vanilla pca}
-%   \includegraphics[width=4.5in]{pca_digits.png}
-%   \label{figures:wu61}
-%   \end{center}
-% \end{figure}
+Although most of the images in figure \ref{figures:WU3a} do not look
+like digits, a few do resemble simple primitives which some digits
+share. These eigenvectors likely contribute significantly to the basic
+structure of some digits, but most of the eigenvectors are encoding
+detail information which is not easily recognizable. We can show how
+only a few eignevectors encode some basic structure by taking the 
+eigenvectors and the projected data and trying to reconstruct the original dataset.
+With 784 eigenvectors, the reconstructed data appears to be very accurate 
+as shown in \ref{figures:WU3b}, but with only 5 we still see that some simple
+structures have been captured as shown in \ref{figures:WU3c} which shows why
+some of the eignvectors in figure \ref{figures:WU3a} may look like simple digit structures.
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4.5in]{WU3_a.pdf}
+  \caption{Plot of eigenvectors using vanilla pca}
+  \label{figures:WU3a}
+  \end{center}
+\end{figure}
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4.5in]{WU3_b.pdf}
+  \caption{Reconstructed digit images using 784 eigenvectors}
+  \label{figures:WU3b}
+  \end{center}
+\end{figure}
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4.5in]{WU3_c.pdf}
+  \caption{Reconstructed digit images using only 5 eigenvectors}
+  \label{figures:WU3c}
+  \end{center}
+\end{figure}
 
 \subsection{WU4}
 \textsf{Why does vanilla PCA find this data difficult? What is the
@@ -66,7 +121,20 @@ here?}\vspace{0.1in}
 Vanilla PCA can only deal with data that is linearly separable. In this dataset, the data is not linearly separable, so vanilla PCA cannot handle it well. 
 The eigenvalues are large in both directions, that is, the variance is large in both directions. Neither of the eigenvectors maximize the variance of the data. This is consistence with the data plot, where the data is in a circle. So none of the directions linear PCA gives us is significantly better than the other.  
 
+Vanilla PCA can only deal with the data that is linear separable. In this
+dataset, the data is not linear separable, so vanilla PCA cannot handle it
+well.
+The eigenvalues are large in both directions, that is, the variance is large
+in both directions. Neither of the eigenvectors maximize the variance of the
+data. This is consistence with the data plot, where the data is in a circle.
+So none of the directions linear PCA gives us is significantly better than
+the other.
 
+Because the original dataset is a sphere shape, so the 2 eigenvalues are
+almost equal.  No matter which eigenvector is chosen, there will be almost
+half of the information lost. Linear PCA doesn't work well on this data set.
+Due to the lost of nearly half of the information of the data, after we
+restore the data, it looks nothing like the original data.
 
 \subsection{WU5}
 \textsf{Did PCA do what we might want it to? Why or why not? Include

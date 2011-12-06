@@ -14,30 +14,45 @@ dot(x.T,x) / real(x.shape[0])
 x0 = dot(dot(x, Z[0,:]).reshape(1000,1), Z[0,:].reshape(1,2))
 x1 = dot(dot(x, Z[1,:]).reshape(1000,1), Z[1,:].reshape(1,2))
 plot(x[:,0], x[:,1], 'b.', x0[:,0], x0[:,1], 'r.', x1[:,0], x1[:,1], 'g.')
+axis((-8.0, 8.0, -8.0, 8.0))
 
 # on digits data
 (X,Y) = datasets.loadDigits()
 (P,Z,evals) = dr.pca(X, 784)
-evals
-
-# draw the top 50 eigvectors
-(X,Y) = datasets.loadDigits()
-(P,Z,evals) = dr.kpca(X, 10, kernel.rbf1)
-util.drawDigits(Z[:,0:49].T,arange(50))
+#evals
 
 #FOR WU2
 N, D = X.shape
 # plot normalized eigenvalues
 evals = evals/sum(evals)
-plot(evals, 'r.')
 
 # find where we have 90% of the var
 summed = cumsum(evals)
-total = summed[-1]
+total = summed[-1] # should be ~1
 within90 = (summed <= total*.90).nonzero()[0]
 within90[-1]+1 # this is how far we have to go to include 90% of the total var
 within95 = (summed <= total*.95).nonzero()[0]
 within95[-1]+1
+
+#FOR WU2 Figure a
+plot(evals, 'r,')
+axis((0.0, 800.0, -0.01, 0.1))
+
+#FOR WU2 Figure b
+plot(summed, 'r,')
+axis((0.0, 800.0, 0.0, 1.1))
+axhline(y=.9, xmin=0, xmax=(10.0/80.0), color='b')
+axhline(y=.95, xmin=0, xmax=(15.5/80.0), color='b')
+annotate('(81, 90.0)', xy=(81, .9), xytext=(151, .7), arrowprops=dict(facecolor='black', shrink=0.05, width=.5, headwidth=4),)
+annotate('(135, 95.0)', xy=(135, .95), xytext=(205, .75), arrowprops=dict(facecolor='black', shrink=0.05, width=.5, headwidth=4),)
+
+#FOR WU3 Figure draw the top 50 eigvectors
+util.drawDigits(Z[:,0:49].T,arange(50))
+#FOR WU3b
+util.drawDigits(dot(P,Z.T),Y)
+#FOR WU3c
+(P,Z,evals) = dr.pca(X, 5)
+util.drawDigits(dot(P,Z.T),Y)
 
 # ---------- KPCA ---------- #
 Si = util.sqrtm(array([[3,2],[2,4]]))

@@ -16,7 +16,6 @@ def rbf0_2(x,z):
     return exp(-0.2 * dot(x-z, x-z))
 
 def rbf0_5(x,z):
-    pdb.set_trace()
     return exp(-0.5 * dot(x-z, x-z))
 
 def rbf1(x,z):
@@ -28,3 +27,7 @@ def rbf2(x,z):
 def rbf5(x,z):
     return exp(-5 * dot(x-z, x-z))
 
+def ours(x,z):
+    return sqrt(dot(x - 2.75,x - 2.75)) + sqrt(dot(z - 2.75,z - 2.75))
+    #return 1.0 / (1.0 + exp(-1*((exp(-0.25 * dot(x-z, x-z))-7.5)*100)))
+    #return 100.0 / (1.0 + exp(-((sqrt(dot(x, x))-2.75)*1000)) + exp(-((sqrt(dot(z, z))-2.75)*1000)))

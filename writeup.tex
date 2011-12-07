@@ -114,49 +114,36 @@ some of the eignvectors in figure \ref{figures:WU3a} may look like simple digit 
   \end{center}
 \end{figure}
 
+\pagebreak
 \subsection{WU4}
 \textsf{Why does vanilla PCA find this data difficult? What is the
 significance of the relatively large value of the eigenvalues
 here?}\vspace{0.1in}
----
-AJ: Eigen values are: array([ 6.181042  ,  5.30205265]), it's not
-relatively large.  It in the same order as the evals done on dataset
-before(([ 5.2620058 ,  1.25255969]). I think he's asking for
-the significance of both being large.
-----
 
 PCA tries to find patterns in dataset that highlights the differences
 and similarities. Once we find such patterns, we can reduce the
 dimensionality of the data without losing too much
 information. Vanilla PCA will find this data difficult to characterize
-because in 2D, there is no unique pattern in the data because the points are distributed uniformly in
-all directions as a circle.
-
-The eigenvalues are relatively large in both directions signifies the
-fact that there is no one direction that maximizes the variance. It
-means that direction of both first and second eigenvectors equally
-maximizes the variance. 
-
----
-Rans part:
-Because the original dataset is a sphere shape, so the 2 eigenvalues are
-almost equal.  No matter which eigenvector is chosen, there will be almost
-half of the information lost. Linear PCA doesn't work well on this data set.
-Due to the lost of nearly half of the information of the data, after we
-restore the data, it looks nothing like the original data.
+because the circular distribution of points cannot be represented
+using only two eigenvectors in two dimensions since this corresponds to 
+linear combinations. Consequently, both of the eigenvalues are relatively similar because
+there is no one direction that maximizes the variance.
 
 \subsection{WU5}
 \textsf{Did PCA do what we might want it to? Why or why not? Include
 the plot to justify your answer.}\vspace{0.1in}
-PCA did not do what we might want it to. We wanted the projected data to seperate the
-red data and the blue data points. As suggested in WU4, PCA does not
-work well because in 2D there is no good direction that maximizes the
-variance of this data.
+
+PCA did not do what we might want it to since we want the projected
+red data and the blue data points to be easily seperable or clustered.
+As shown in figure \ref{figures:WU5} the data has not been separated.
+Following from WU4, PCA does not work well because the circular distribution 
+of points cannot be represented using linear combinations of two dimensional vectors.
+
 \begin{figure}[!ht]
   \begin{center}
-  \caption{projected data using eigenvectors found by vanilla PCA}
   \includegraphics[width=4.5in]{WU5.pdf}
-  \label{figures:wu5}
+  \caption{Projected data using eigenvectors found by vanilla PCA}
+  \label{figures:WU5}
   \end{center}
 \end{figure}
 
@@ -167,34 +154,74 @@ for supervised learning?}\vspace{0.1in}
 
 Compared to the linear case, the eigenvalues are much smaller in
 magnitude $(0.08121919,  0.05313867)$, and the ratio of the first
-eigenvalue to the second eigenvalue is around 1.5, where with the
-linear case the ratio was very close to 1. This means that this KPCA
-managed to find a pattern in the data better than the linear one.
+eigenvalue to the second eigenvalue is around 1.5, where the
+linear case exhibited a ratio that was closer to 1. 
+This means that KPCA using rbf1 managed to...
 
-The projected data manages to cluster the red datapoints and blue
-datapoints seperately, although the margin is very small. 
+As shown in figure \ref{figures:WU6}, the projection clusters 
+red datapoints into a small space, whereas blue datapoints a 
+left dispersed but seperate from the red points by a small margin.
 This is useful for supervised learning because we can use KPCA
-projection to cluster the training data
-points that belong in the same class as much as possible, and feed
-that projected data to the classifier.
+projection to cluster the training data points that belong in 
+the same class as much as possible, and feed that projected data to the classifier.
 Since we have the labels we can try different kernels and use the one
-that gives us the largest margin and make the training data linearly
-seperable so that learning will be easier for classifiers.
+that gives us the largest margin and is the easiest for our classifier to learn.
+
 \begin{figure}[!ht]
   \begin{center}
-  \caption{Using KPCA}
   \includegraphics[width=4.5in]{WU6.pdf}
-  \label{figures:wu61}
+  \caption{Projected data using KPCA and rbf1}
+  \label{figures:WU6}
   \end{center}
 \end{figure}
 
+\pagebreak
 \subsection{WU7}
 \textsf{Experiment with different kernels, and perhaps interpolations 
 of different kernels. Try to find a kernel that gets as much of the 
 variance on the first two principle components as possible. Report your 
 kernel and a plot of the data projected into 2d under that kernel.}\vspace{0.1in}
-$rbf0_2$ does well so far.
-\pagebreak
+
+The standalone kernel that seemed to perform the best were rbf0\_2 and rbf0\_5,
+as shown in figure \ref{figures:WU7_rbf0_2} and figure \ref{figures:WU7_rbf0_5}
+respectively. The former seemed to nicely separate the red and blue points,
+and the latter seemed to cluster the red points, so we tried to combine the two 
+kernels multiplicatively. The result, shown in figure \ref{figures:WU7_combo},
+was actually not much different than rbf0\_5, but it seemed to be the best using 
+combinations of the standard kernel functions. Finally, we tried to make our own
+function based on our knowledge of the data, yielding the function and result in
+figure \ref{figures:WU7_final}. This function has reduced all the red data and blue
+data to separate points, however the function is probably not positive semi-definite,
+though this assertion has not been verified. Regardless, these are interesting
+examples of kernel function that might be useful if this type of data needed to be classified.
+
+\begin{figure}[!ht]
+  \centering
+  \subfloat[rbf0\_2]{\label{figures:WU7_rbf0_2}\includegraphics[width=2.25in]{WU7_rbf_0_2.pdf}}
+  \subfloat[rbf0\_5]{\label{figures:WU7_rbf0_5}\includegraphics[width=2.25in]{WU7_rbf_0_5.pdf}}  
+  \caption{Projected data using KPCA and standard kernels}
+\end{figure}
+
+\newpage
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4in]{WU7_combo.pdf}
+  \caption{Projected data using KPCA and rbf0\_2 and rbf0\_5 combined}
+  \label{figures:WU7_combo}
+  \end{center}
+\end{figure}
+
+\begin{figure}[!ht]
+  \begin{center}
+  \includegraphics[width=4in]{WU7_final.pdf}
+  \caption{Projected data using KPCA and the custom function}
+  \[\frac{1000}{1 + e^{-1000 \sqrt{(x \cdot x) - 2.75}} + e^{-1000 \sqrt{(z \cdot z) - 2.75}}}\] 
+  \label{figures:WU7_final}
+  \end{center}
+\end{figure}
+
+\newpage
 \section{HMMs:Viterbi}
 \subsection{WU8}
 \textsf{Find two different observation sequences of length four that
@@ -216,6 +243,7 @@ differ in one.
 What happens when you use three states instead of two? 
 What's the resulting probability of the data? 
 What about four states? What happens and why?}\vspace{0.1in}
+
 EM settles in this configuration because it has found a local minima. The
 $\hat \pi = [1,0,0]$ means that we always start at state 0. We also get $P(X_t=0|X_{t-1}=0)= 0$,
 i.e. when we transition we always go to a different state. All
@@ -241,6 +269,7 @@ But as the number of states increases, the likelihood of uniformly
 distributin the initial HMM probabilities increases. So we get more
 reasonable (unskewed) results for EM.
 
+\pagebreak
 \subsection{WU10}
 \textsf{Run EM on this data using two states. 
 Run it a few times until you get a final log probability at least -9250. 
@@ -249,6 +278,13 @@ When you do this, it will print out the resulting initial state probabilities,
 transition probabilities and emission probabilities. 
 What has it learned? Include all of this output in your
 write-up.}\vspace{0.1in}
+
+It has learned the probability of spaces and vowels vs the probability
+of consonants! State 0 emits all spaces or vowels and state 1 emits
+consonants. It also makes sense that the transition from state 0 to
+state 0 is lower than that of state 1, because it's more likely that
+consonants are followed by consonants than that vowels are followed by vowels.
+
 The output of EM om this data is:
 \begin{verbatim}
 Initial state probabilities:
@@ -319,10 +355,4 @@ Emission probabilities:
 		i  2.8181e-11
 		q  1.18265e-17
 \end{verbatim}
-
-It has learned the probability of spaces and vowels vs the probability
-of consonants! State 0 emits all spaces or vowels and state 1 emits
-consonants. It also makes sense that the transition from state 0 to
-state 0 is lower than that of state 1, because it's more likely that
-consonants are followed by consonants than that vowels are followed by vowels.
 \end{document}

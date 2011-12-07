@@ -84,11 +84,12 @@ plot(Pa[:,0], randn(Pa.shape[0]), 'b.', Pb[:,0], randn(Pb.shape[0]), 'r.')
 
 # now use KCPA
 (P,alpha,evals) = dr.kpca(x, 2, kernel.rbf1)
-evals
+#evals
 
 Pa = P[0:a.shape[0],:]
 Pb = P[a.shape[0]:,:]
 plot(Pa[:,0], Pa[:,1], 'b.', Pb[:,0], Pb[:,1], 'r.')
+
 plot(alpha[:, 0],'r.')
 ####################
 # HMM
